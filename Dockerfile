@@ -105,7 +105,7 @@ RUN { \
 	echo '[program:opendkim]'; \
 	echo 'process_name    = opendkim'; \
 	echo 'autostart       = true'; \
-	echo 'autorestart     = true'; \
+	echo 'autorestart     = false'; \
 	echo 'directory       = /etc/opendkim'; \
 	echo 'command         = /usr/sbin/opendkim -p inet:12301 -x /etc/opendkim/opendkim.conf'; \
 	echo 'startsecs       = 0'; \
@@ -121,10 +121,11 @@ RUN { \
 	echo '[program:syslog]'; \
 	echo 'process_name    = syslog'; \
 	echo 'autostart       = true'; \
-	echo 'autorestart     = true'; \
+	echo 'autorestart     = false'; \
 	echo 'directory       = /etc'; \
 	echo 'command         = /sbin/syslogd'; \
-	echo 'startsecs       = 0'; \	} | tee /etc/supervisord.conf
+	echo 'startsecs       = 0'; \
+	} | tee /etc/supervisord.conf
 
 # Configure postfix
 RUN postconf -e smtputf8_enable=no

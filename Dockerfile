@@ -28,38 +28,11 @@ RUN true && \
 # Install CPAN modules
 RUN cpan CPAN Log::Log4perl
 # RUN cpan -T Authen::SASL
-RUN cpan BerkeleyDB 
-RUN cpan BerkeleyDB_DBEngine 
-RUN cpan Convert::TNEF  
-RUN cpan DB_File 
-RUN cpan Email::MIME 
-RUN cpan Email::Send 
-RUN cpan File::ReadBackwards 
-RUN cpan MIME::Types 
-RUN cpan Mail::DKIM::Verifier
-RUN cpan -T Mail::SPF
-RUN cpan -T Mail::SPF::Query 
-RUN cpan Mail::SRS 
-RUN cpan Net::CIDR::Lite 
-RUN cpan Net::IP 
-RUN cpan Net::LDAP 
-RUN cpan NetAddr::IP::Lite 
-RUN cpan Regexp::Optimizer 
-RUN cpan -T Schedule::Cron 
-RUN cpan Sys::MemInfo 
-RUN cpan Text::Unidecode 
-RUN cpan Thread::State 
-RUN cpan Tie::RDBM 
-RUN cpan Unicode::GCString 
-RUN cpan Convert::Scalar 
-RUN cpan -T Filesys::DiskSpace 
-RUN cpan Lingua::Stem::Snowball 
-RUN cpan Lingua::Identify
-RUN cpan IO::Socket::SSL 
-RUN cpan Archive::Extract
-RUN cpan Archive::Zip
-RUN cpan IO::Socket::INET6
-RUN cpan -T Sys::CpuAffinity
+RUN cpan BerkeleyDB BerkeleyDB_DBEngine Convert::TNEF DB_File Email::MIME Email::Send File::ReadBackwards MIME::Types Mail::DKIM::Verifier
+RUN cpan -T Mail::SPF Mail::SPF::Query Schedule::Cron Filesys::DiskSpace Sys::CpuAffinity
+RUN cpan Mail::SRS Net::CIDR::Lite Net::IP Net::LDAP NetAddr::IP::Lite Regexp::Optimizer Sys::MemInfo Text::Unidecode Thread::State Tie::RDBM \
+         Unicode::GCString Convert::Scalar Lingua::Stem::Snowball Lingua::Identify IO::Socket::SSL Archive::Extract Archive::Zip \
+         IO::Socket::INET6 Filesys::Df
 RUN rm -rf /root/.cpan/* 2>/dev/null
 
 # Get ASSP
@@ -99,7 +72,7 @@ RUN { \
 	echo 'autostart       = true'; \
 	echo 'autorestart     = false'; \
 	echo 'directory       = /etc/postfix'; \
-	echo 'command         = /usr/sbin/postfix start'; \
+	echo 'command         = /usr/sbin/postfix.sh'; \
 	echo 'startsecs       = 0'; \
 	echo; \
 	echo '[program:opendkim]'; \
@@ -140,41 +113,13 @@ RUN sed -i -r -e 's/^#submission/submission/' -e 's/smtp      inet  n       -   
 
 # Create postfix.sh
 RUN { \
-	echo '# Set up host name'; \
-	echo 'if [[ ! -z "$HOSTNAME" ]]; then'; \
-	echo '        postconf -e myhostname=$HOSTNAME'; \
-	echo 'else'; \
-	echo '        postconf -# myhostname'; \
-	echo 'fi'; \
-	echo; \
-	echo '# Set up a relay host, if needed'; \
-	echo 'if [[ ! -z "$RELAYHOST" ]]; then'; \
-	echo '        postconf -e relayhost=$RELAYHOST'; \
-	echo 'else'; \
-	echo '        postconf -# relayhost'; \
-	echo 'fi'; \
-	echo; \
-	echo '# Split with space'; \
-	echo 'if [[ ! -z "$ALLOWED_SENDER_DOMAINS" ]]; then'; \
-	echo '        echo "Setting up allowed SENDER domains:"'; \
-	echo '        allowed_senders=/etc/postfix/allowed_senders'; \
-	echo '        rm -f $allowed_senders $allowed_senders.db > /dev/null'; \
-	echo '        touch $allowed_senders'; \
-	echo '        for i in "$ALLOWED_SENDER_DOMAINS"; do'; \
-	echo '                echo -e "\t$i"'; \
-	echo '                echo -e "$i\tOK" >> $allowed_senders'; \
-	echo '        done'; \
-	echo '        postmap $allowed_senders'; \
-	echo ; \
-	echo '        postconf -e "smtpd_restriction_classes=allowed_domains_only"'; \
-	echo '        postconf -e "allowed_domains_only=permit_mynetworks, reject_non_fqdn_sender reject"'; \
-	echo '        postconf -e "smtpd_recipient_restrictions=reject_non_fqdn_recipient, reject_unknown_recipient_domain, reject_unverified_recipient, check_sender_access hash:$allowed_senders, reject"'; \
-	echo 'else'; \
-	echo '        postconf -# "smtpd_restriction_classes"'; \
-	echo '        postconf -e "smtpd_recipient_restrictions=reject_non_fqdn_recipient,reject_unknown_recipient_domain,reject_unverified_recipient"'; \
-	echo 'fi'; \
-	echo '/usr/sbin/postfix -c /etc/postfix start'; \
-	} | tee /postfix.sh
+    echo '# Fix permissions'; \
+    echo 'chown root /var/spool/postfix/.'; \
+    echo 'chown root /var/spool/postfix/pid'; \
+    echo 'chown root /etc/postfix/*'; \
+    echo ; \
+    echo '/usr/sbin/postfix -c /etc/postfix start'; \
+} | tee /postfix.sh
 
 RUN chmod +x /postfix.sh
 RUN chmod +x /usr/share/assp/assp.pl
@@ -186,7 +131,7 @@ EXPOSE 225
 EXPOSE 25
 
 #Adding volumes
-VOLUME ["/etc/postfix", "/usr/share/assp/assp.cfg",, "/usr/share/assp/certs","/etc/opendkim"]
+VOLUME ["/etc/postfix", "/usr/share/assp/assp.cfg", "/usr/share/assp/certs","/etc/opendkim"]
 
 # Running final script
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

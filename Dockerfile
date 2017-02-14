@@ -131,7 +131,13 @@ EXPOSE 225
 EXPOSE 25
 
 #Adding volumes
-VOLUME ["/etc/postfix", "/usr/share/assp/assp.cfg", "/usr/share/assp/certs","/etc/opendkim"]
+VOLUME ["/etc/postfix", \
+        "/usr/share/assp/assp.cfg", \
+		"/usr/share/assp/errors", \
+		"/usr/share/assp/spam", \
+		"/usr/share/assp/notspam", \
+		"/usr/share/assp/certs", \
+		"/etc/opendkim"]
 
 # Running final script
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

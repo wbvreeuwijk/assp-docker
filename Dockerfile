@@ -1,10 +1,10 @@
 #Creating Images for ASSP web service 
-FROM alpine:3.5
+FROM alpine
 
-RUN { \
-       echo '@edge http://nl.alpinelinux.org/alpine/edge/main'; \
-       echo '@testing http://nl.alpinelinux.org/alpine/edge/testing'; \
-    } | tee >> /etc/apk/repositories
+#RUN { \
+#       echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main'; \
+#       echo '@testing http:/dl-cdn.alpinelinux.org/alpine/edge/testing'; \
+#    } | tee >> /etc/apk/repositories
 
 
 ENV TZ=Europe/Amsterdam
@@ -22,17 +22,20 @@ RUN true && \
         perl-devel-globaldestruction perl-parallel-prefork perl-cgi-emulate-psgi perl-text-template perl-net-cidr perl-apache-session \
         perl-locale-maketext-lexicon perl-locale-maketext-fuzzy perl-regexp-common-net-cidr perl-module-refresh perl-date-manip perl-regexp-ipv6 \
         perl-text-wrapper perl-universal-require perl-role-basic perl-convert-binhex perl-test-sharedfork perl-test-tcp perl-server-starter \
-        perl-starlet perl-dev libc-dev openssl openssl-dev db-dev yaml gnupg linux-headers && \
+        perl-starlet perl-dev libc-dev openssl openssl-dev db-dev yaml gnupg linux-headers krb5-dev zip && \
         (rm "/tmp/"* 2>/dev/null || true) && (rm -rf /var/cache/apk/* 2>/dev/null || true)
 
 # Install CPAN modules
-RUN cpan CPAN Log::Log4perl
+RUN cpan CPAN
+# Install CPAN modules
+# RUN cpan CPAN Log::Log4perl
 # RUN cpan -T Authen::SASL
 RUN cpan BerkeleyDB BerkeleyDB_DBEngine Convert::TNEF DB_File Email::MIME Email::Send File::ReadBackwards MIME::Types Mail::DKIM::Verifier
 RUN cpan -T Mail::SPF Mail::SPF::Query Schedule::Cron Filesys::DiskSpace Sys::CpuAffinity
 RUN cpan Mail::SRS Net::CIDR::Lite Net::IP Net::LDAP NetAddr::IP::Lite Regexp::Optimizer Sys::MemInfo Text::Unidecode Thread::State Tie::RDBM \
-         Unicode::GCString Convert::Scalar Lingua::Stem::Snowball Lingua::Identify IO::Socket::SSL Archive::Extract Archive::Zip \
-         IO::Socket::INET6 Filesys::Df
+         Unicode::GCString Convert::Scalar Lingua::Stem::Snowball Lingua::Identify IO::Socket::SSL Archive::Extract \
+         IO::Socket::INET6 Filesys::Df Archive::Zip
+
 RUN rm -rf /root/.cpan/* 2>/dev/null
 
 # Get ASSP
@@ -41,13 +44,17 @@ RUN true & \
     wget https://sourceforge.net/projects/assp/files/latest/download?source=files -O ASSP.zip && \
     unzip ASSP.zip && \
     cd assp && \
-    wget http://assp.cvs.sourceforge.net/viewvc/assp/assp2/filecommander/?view=tar -O assp-filecommander.tar.gz && \
-    tar xzvf assp-filecommander.tar.gz && \
-    unzip filecommander/1.05.ZIP && \
+#    wget http://assp.cvs.sourceforge.net/viewvc/assp/assp2/filecommander/?view=tar -O assp-filecommander.tar.gz && \
+    wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/filecommander/1.05.ZIP && \
+#    tar xzvf assp-filecommander.tar.gz && \
+#    unzip filecommander/1.05.ZIP && \
+    unzip 1.05.ZIP && \
     mv 1.05/images/* /usr/share/assp/images && \
     mv 1.05/lib/* /usr/share/assp/lib && \
-    wget  http://assp.cvs.sourceforge.net/viewvc/assp/assp2/lib/?view=tar -O assp-lib.tar.gz && \
-    tar xzvf assp-lib.tar.gz
+#    wget http://assp.cvs.sourceforge.net/viewvc/assp/assp2/lib/?view=tar -O assp-lib.tar.gz && \
+    wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/lib/lib.zip 
+#   unzip lib.zip
+#    tar xzvf assp-lib.tar.gz
 
 RUN chmod +x /usr/share/assp/assp.pl
 RUN mkdir -p /etc/assp && ln -s /etc/assp/assp.cfg /usr/share/assp/assp.cfg
@@ -79,6 +86,7 @@ RUN { \
 VOLUME ["/usr/share/assp/assp.cfg", \
         "/usr/share/assp/errors", \
         "/usr/share/assp/spam", \
+        "/usr/share/assp/files", \
         "/usr/share/assp/notspam", \
         "/usr/share/assp/certs"]
 

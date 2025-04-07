@@ -1,4 +1,4 @@
-#Creating Images for ASSP web service 
+#Creating Images for ASSP web service
 FROM alpine
 
 #RUN { \
@@ -13,8 +13,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apk update && apk upgrade
 RUN true && \
     apk add --update tzdata bash supervisor perl perl-sys-hostname-long perl-net-dns make automake gcc \
-        perl-lwp-protocol-https perl-dbd-pg perl-dbd-mysql perl-dbd-sqlite perl-cgi-psgi perl-cgi perl-fcgi perl-term-readkey \ 
-        perl-xml-rss perl-crypt-ssleay perl-crypt-eksblowfish perl-crypt-x509 perl-html-mason-psgihandler perl-fcgi-procmanager \ 
+        perl-lwp-protocol-https perl-dbd-pg perl-dbd-mysql perl-dbd-sqlite perl-cgi-psgi perl-cgi perl-fcgi perl-term-readkey \
+        perl-xml-rss perl-crypt-ssleay perl-crypt-eksblowfish perl-crypt-x509 perl-html-mason-psgihandler perl-fcgi-procmanager \
         perl-mime-types perl-list-moreutils perl-json perl-html-quoted perl-html-scrubber perl-email-address perl-text-password-pronounceable \
         perl-email-address-list perl-html-formattext-withlinks-andtables perl-html-rewriteattributes perl-text-wikiformat perl-text-quoted \
         perl-datetime-format-natural perl-date-extract perl-data-guid perl-data-ical perl-string-shellquote perl-convert-color perl-dbix-searchbuilder \
@@ -22,19 +22,25 @@ RUN true && \
         perl-devel-globaldestruction perl-parallel-prefork perl-cgi-emulate-psgi perl-text-template perl-net-cidr perl-apache-session \
         perl-locale-maketext-lexicon perl-locale-maketext-fuzzy perl-regexp-common-net-cidr perl-module-refresh perl-date-manip perl-regexp-ipv6 \
         perl-text-wrapper perl-universal-require perl-role-basic perl-convert-binhex perl-test-sharedfork perl-test-tcp perl-server-starter \
-        perl-starlet perl-dev libc-dev openssl openssl-dev db-dev yaml gnupg linux-headers krb5-dev zip && \
+        perl-starlet perl-dev libc-dev openssl openssl-dev db-dev yaml gnupg linux-headers krb5-dev zip clamav \
+        musl-dev mariadb-connector-c-dev gcc musl-obstack-dev imagemagick imagemagick-perlmagick poppler-utils tesseract-ocr rsvg-convert xpdf && \
         (rm "/tmp/"* 2>/dev/null || true) && (rm -rf /var/cache/apk/* 2>/dev/null || true)
 
 # Install CPAN modules
-RUN cpan CPAN
-# Install CPAN modules
-# RUN cpan CPAN Log::Log4perl
-# RUN cpan -T Authen::SASL
-RUN cpan BerkeleyDB BerkeleyDB_DBEngine Convert::TNEF DB_File Email::MIME Email::Send File::ReadBackwards MIME::Types Mail::DKIM::Verifier
-RUN cpan -T Mail::SPF Mail::SPF::Query Schedule::Cron Filesys::DiskSpace Sys::CpuAffinity
-RUN cpan Mail::SRS Net::CIDR::Lite Net::IP Net::LDAP NetAddr::IP::Lite Regexp::Optimizer Sys::MemInfo Text::Unidecode Thread::State Tie::RDBM \
-         Unicode::GCString Convert::Scalar Lingua::Stem::Snowball Lingua::Identify IO::Socket::SSL Archive::Extract \
-         IO::Socket::INET6 Filesys::Df Archive::Zip
+RUN cpan CPAN CPAN::DistnameInfo Text::Glob Number::Compare Compress::Zlib Convert::TNEF Digest::MD5 Digest::SHA1 Email::MIME::Modifier Email::Send \
+    Email::Valid File::ReadBackwards LWP::Simple MIME::Types Mail::SPF Mail::SRS Net::CIDR::Lite Net::DNS Net::IP::Match::Regexp Net::LDAP Net::SMTP \
+    Net::SenderBase Net::Syslog PerlIO::scalar threads threads::shared Thread::Queue Thread::State Tie::DBI Time::HiRes Sys::MemInfo IO::Socket::SSL \
+    BerkeleyDB Crypt::CBC Crypt::OpenSSL::AES DBD::CSV DBD::File DBD::LDAP DBD::mysql::informationschema DBD::mysqlPP DBD::MariaDB DBIx::AnyDBD YAML \
+    File::Find::Rule File::Slurp File::Which LEOCHARRE::DEBUG File::chmod Linux::usermod Crypt::RC4 Text::PDF Smart::Comments CAM::PDF PDF::API2 \
+    Convert::Scalar
+RUN cpan -T File::Scan::ClamAV Mail::DKIM::Verifier Mail::SPF::Query Schedule::Cron LEOCHARRE::CLI
+# RUN cpan  Image::Magick
+# RUN cpan  -T PDF::Burst
+# RUN cpan   PDF::GetImages
+# RUN cpan  -T Image::OCR::Tesseract
+# RUN cpan   PDF::OCR
+# RUN cpan   PDF::OCR2
+# RUN cpan   LEOCHARRE::DEBUG
 
 RUN rm -rf /root/.cpan/* 2>/dev/null
 
@@ -52,7 +58,7 @@ RUN true & \
     mv 1.05/images/* /usr/share/assp/images && \
     mv 1.05/lib/* /usr/share/assp/lib && \
 #    wget http://assp.cvs.sourceforge.net/viewvc/assp/assp2/lib/?view=tar -O assp-lib.tar.gz && \
-    wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/lib/lib.zip 
+    wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/lib/lib.zip
 #   unzip lib.zip
 #    tar xzvf assp-lib.tar.gz
 

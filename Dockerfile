@@ -27,12 +27,13 @@ RUN true && \
         (rm "/tmp/"* 2>/dev/null || true) && (rm -rf /var/cache/apk/* 2>/dev/null || true)
 
 # Install CPAN modules
-RUN cpan CPAN CPAN::DistnameInfo Text::Glob Number::Compare Compress::Zlib Convert::TNEF Digest::MD5 Digest::SHA1 Email::MIME::Modifier Email::Send \
-    Email::Valid File::ReadBackwards LWP::Simple MIME::Types Mail::SPF Mail::SRS Net::CIDR::Lite Net::DNS Net::IP::Match::Regexp Net::LDAP Net::SMTP \
-    Net::SenderBase Net::Syslog PerlIO::scalar threads threads::shared Thread::Queue Thread::State Tie::DBI Time::HiRes Sys::MemInfo IO::Socket::SSL \
-    BerkeleyDB Crypt::CBC Crypt::OpenSSL::AES DBD::CSV DBD::File DBD::LDAP DBD::mysql::informationschema DBD::mysqlPP DBD::MariaDB DBIx::AnyDBD YAML \
-    File::Find::Rule File::Slurp File::Which LEOCHARRE::DEBUG File::chmod Linux::usermod Crypt::RC4 Text::PDF Smart::Comments CAM::PDF PDF::API2 \
-    Convert::Scalar
+RUN cpan CPAN CPAN::DistnameInfo 
+RUN cpan Text::Glob Number::Compare Compress::Zlib Convert::TNEF Digest::MD5 Digest::SHA1 Email::MIME::Modifier Email::Send \
+         Email::Valid File::ReadBackwards LWP::Simple MIME::Types Mail::SPF Mail::SRS Net::CIDR::Lite Net::DNS Net::IP::Match::Regexp Net::LDAP Net::SMTP \
+         Net::SenderBase Net::Syslog PerlIO::scalar threads threads::shared Thread::Queue Thread::State Tie::DBI Time::HiRes Sys::MemInfo IO::Socket::SSL \
+         BerkeleyDB Crypt::CBC Crypt::OpenSSL::AES DBD::CSV DBD::File DBD::LDAP DBD::mysql::informationschema DBD::mysqlPP DBD::MariaDB DBIx::AnyDBD YAML \
+         File::Find::Rule File::Slurp File::Which LEOCHARRE::DEBUG File::chmod Linux::usermod Crypt::RC4 Text::PDF Smart::Comments CAM::PDF PDF::API2 \
+         Convert::Scalar
 RUN cpan -T File::Scan::ClamAV Mail::DKIM::Verifier Mail::SPF::Query Schedule::Cron LEOCHARRE::CLI
 # RUN cpan  Image::Magick
 # RUN cpan  -T PDF::Burst

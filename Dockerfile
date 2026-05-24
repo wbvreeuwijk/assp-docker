@@ -74,10 +74,9 @@ RUN mkdir -p /usr/share/assp && cd /usr/share && \
     mv 1.05/lib/* /usr/share/assp/lib && \
     wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/lib/lib.zip && \
     unzip -o lib.zip && \
-    wget -O /usr/share/assp/assp.pl.gz https://sourceforge.net/p/assp/svn/HEAD/tree/assp2/trunk/assp.pl.gz?format=raw && \
-    gunzip -c /usr/share/assp/assp.pl.gz > /usr/share/assp/assp.pl && \
+    wget -O /usr/share/assp/assp.pl https://sourceforge.net/p/assp/svn/HEAD/tree/assp2/trunk/assp.pl?format=raw && \
     chmod +x /usr/share/assp/assp.pl && \
-    rm -f ASSP.zip 1.05.ZIP lib.zip /usr/share/assp/assp.pl.gz
+    rm -f ASSP.zip 1.05.ZIP lib.zip
 
 RUN mkdir -p /etc/assp && ln -s /etc/assp/assp.cfg /usr/share/assp/assp.cfg
 

@@ -1,29 +1,31 @@
 # ==========================================
+# Image metadata
+LABEL maintainer="Bas van Reeuwijk <[EMAIL_ADDRESS]>"
+LABEL org.opencontainers.image.title="ASSP Docker Image"
+LABEL org.opencontainers.image.description="Anti Spam SMTP Proxy (ASSP) running under Alpine"
+LABEL org.opencontainers.image.version="1.0"
 # STAGE 1: Builder
 # ==========================================
 FROM alpine:3.20 AS builder
 
 # Install build dependencies
-RUN apk add --no-cache \
+RUN apk add --no-cache --virtual .build-deps \
     perl perl-dev perl-app-cpanminus make automake gcc libc-dev \
     openssl-dev db-dev yaml-dev mariadb-connector-c-dev musl-obstack-dev \
-    wget zip unzip \
-    perl-net-ssleay perl-crypt-ssleay perl-io-socket-ssl perl-cryptx \
-    clamav tesseract-ocr poppler-utils imagemagick
-
-# Build and compile CPAN modules
-RUN cpanm --notest --local-lib /perl-lib \
+    wget zip unzip perl-net-ssleay perl-crypt-ssleay perl-io-socket-ssl perl-cryptx \
+    && cpanm --notest --local-lib /perl-lib \
     CPAN::DistnameInfo Text::Glob Number::Compare Compress::Zlib Convert::TNEF Digest::MD5 Digest::SHA1 Email::MIME::Modifier Email::Send \
     Email::Valid File::ReadBackwards LWP::Simple MIME::Types Mail::SPF Mail::SRS Net::CIDR::Lite Net::DNS Net::IP::Match::Regexp Net::LDAP Net::SMTP \
     Net::SenderBase Net::Syslog PerlIO::scalar threads threads::shared Thread::Queue Thread::State Tie::DBI Time::HiRes Sys::MemInfo IO::Socket::SSL \
     BerkeleyDB Crypt::CBC Crypt::OpenSSL::AES DBD::CSV DBD::File DBD::LDAP DBD::MariaDB DBIx::AnyDBD YAML \
     File::Find::Rule File::Slurp File::Which https://backpan.perl.org/authors/id/L/LE/LEOCHARRE/LEOCHARRE-Debug-1.03.tar.gz File::chmod Linux::usermod Crypt::RC4 Text::PDF Smart::Comments CAM::PDF PDF::API2 \
-    Convert::Scalar
-
-RUN cpanm --notest --local-lib /perl-lib \
+    Convert::Scalar \
+    && cpanm --notest --local-lib /perl-lib \
     File::Scan::ClamAV Mail::DKIM::Verifier Mail::SPF::Query Schedule::Cron \
     https://backpan.perl.org/authors/id/L/LE/LEOCHARRE/LEOCHARRE-CLI-1.19.tar.gz \
-    PDF::Burst PDF::GetImages Image::OCR::Tesseract PDF::OCR PDF::OCR2
+    PDF::Burst PDF::GetImages Image::OCR::Tesseract PDF::OCR PDF::OCR2 \
+    && apk del .build-deps \
+    && rm -rf /var/cache/apk/*
 
 # ==========================================
 # STAGE 2: Runtime
@@ -62,6 +64,7 @@ COPY --from=builder /perl-lib /usr/local
 
 # Set environment variables for Perl to see the copied local-lib paths
 ENV PERL5LIB=/usr/local/lib/perl5
+WORKDIR /usr/share/assp
 
 # Get ASSP
 RUN mkdir -p /usr/share/assp && cd /usr/share && \
@@ -76,27 +79,17 @@ RUN mkdir -p /usr/share/assp && cd /usr/share && \
     unzip -o lib.zip && \
     wget -O /usr/share/assp/assp.pl https://sourceforge.net/p/assp/svn/HEAD/tree/assp2/trunk/assp.pl?format=raw && \
     chmod +x /usr/share/assp/assp.pl && \
-    rm -f ASSP.zip 1.05.ZIP lib.zip
+    rm -f ASSP.zip 1.05.ZIP lib.zip \
+    chown -R assp:assp /usr/share/assp /etc/assp
 
 RUN mkdir -p /etc/assp && ln -s /etc/assp/assp.cfg /usr/share/assp/assp.cfg
 
+RUN addgroup -S assp && adduser -S -G assp assp
 EXPOSE 55555 225 465 25
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl -f http://localhost:55555/ || exit 1
 
 # Configure supervisord
-RUN { \
-    echo '[supervisord]'; \
-    echo 'nodaemon        = true'; \
-    echo 'logfile         = /dev/null'; \
-    echo 'logfile_maxbytes= 0'; \
-    echo; \
-    echo '[program:assp]'; \
-    echo 'process_name    = assp'; \
-    echo 'autostart       = true'; \
-    echo 'autorestart     = true'; \
-    echo 'directory       = /usr/share/assp'; \
-    echo 'command         = /usr/share/assp/assp.pl'; \
-    echo 'startsecs       = 0'; \
-    } | tee /etc/supervisord.conf
+COPY supervisord.conf /etc/supervisord.conf
 
 VOLUME ["/usr/share/assp/assp.cfg", \
     "/usr/share/assp/errors", \
@@ -105,4 +98,5 @@ VOLUME ["/usr/share/assp/assp.cfg", \
     "/usr/share/assp/notspam", \
     "/usr/share/assp/certs"]
 
+USER assp
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

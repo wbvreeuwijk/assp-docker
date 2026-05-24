@@ -1,12 +1,14 @@
-# ==========================================
-# Image metadata
-LABEL maintainer="Bas van Reeuwijk <[EMAIL_ADDRESS]>"
-LABEL org.opencontainers.image.title="ASSP Docker Image"
-LABEL org.opencontainers.image.description="Anti Spam SMTP Proxy (ASSP) running under Alpine"
-LABEL org.opencontainers.image.version="1.0"
 # STAGE 1: Builder
 # ==========================================
 FROM alpine:3.20 AS builder
+
+# ==========================================
+# Image metadata
+LABEL maintainer="Bas van Reeuwijk <bas@reeuwijk.net>"
+LABEL org.opencontainers.image.title="ASSP Docker Image"
+LABEL org.opencontainers.image.description="Anti Spam SMTP Proxy (ASSP) running under Alpine"
+LABEL org.opencontainers.image.version="1.0"
+
 
 # Install build dependencies
 RUN apk add --no-cache --virtual .build-deps \

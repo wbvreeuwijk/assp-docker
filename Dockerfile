@@ -41,7 +41,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install only runtime dependencies (no compilers, dev libraries, etc.)
 RUN apk add --no-cache \
-    tzdata bash supervisor perl clamav zip unzip coreutils \
+    tzdata bash supervisor perl clamav clamav-daemon freshclam zip unzip coreutils \
     mariadb-connector-c musl-obstack imagemagick poppler-utils \
     tesseract-ocr rsvg-convert xpdf \
     db openssl curl \
@@ -72,6 +72,24 @@ ENV PERL5LIB=/usr/local/lib/perl5
 # Create system user and group
 RUN addgroup -S assp && adduser -S -G assp assp
 
+# Configure ClamAV
+RUN if [ ! -f /etc/clamav/clamd.conf ] && [ -f /etc/clamav/clamd.conf.sample ]; then \
+        cp /etc/clamav/clamd.conf.sample /etc/clamav/clamd.conf; \
+    fi && \
+    if [ ! -f /etc/clamav/freshclam.conf ] && [ -f /etc/clamav/freshclam.conf.sample ]; then \
+        cp /etc/clamav/freshclam.conf.sample /etc/clamav/freshclam.conf; \
+    fi && \
+    sed -i 's/^Example/#Example/' /etc/clamav/clamd.conf && \
+    sed -i 's/^Example/#Example/' /etc/clamav/freshclam.conf && \
+    sed -i 's|^#\?LocalSocket .*|LocalSocket /var/run/clamav/clamd.ctl|' /etc/clamav/clamd.conf && \
+    sed -i 's|^#\?LocalSocketMode .*|LocalSocketMode 666|' /etc/clamav/clamd.conf && \
+    sed -i 's|^#\?DatabaseDirectory .*|DatabaseDirectory /var/lib/clamav|' /etc/clamav/clamd.conf && \
+    sed -i 's|^#\?DatabaseDirectory .*|DatabaseDirectory /var/lib/clamav|' /etc/clamav/freshclam.conf && \
+    sed -i 's|^#\?User .*|User clamav|' /etc/clamav/clamd.conf && \
+    mkdir -p /var/run/clamav /var/lib/clamav /var/log/clamav && \
+    chown -R clamav:clamav /var/run/clamav /var/lib/clamav /var/log/clamav && \
+    freshclam || true
+
 WORKDIR /usr/share/assp
 
 # Get ASSP
@@ -98,7 +116,7 @@ RUN mkdir -p /etc/assp /usr/share/assp/logs && \
 # Change ownership of ASSP directories to the created user
 RUN chown -R assp:assp /usr/share/assp /etc/assp
 EXPOSE 55555 225 465 25
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl -f http://localhost:55555/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl -s -o /dev/null -w "%{http_code}" http://localhost:55555/ | grep -qE '^(200|301|302|401)$' || exit 1
 
 # Configure supervisord
 COPY supervisord.conf /etc/supervisord.conf

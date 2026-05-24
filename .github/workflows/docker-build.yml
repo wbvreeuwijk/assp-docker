@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  # Adds a "Run workflow" button in the GitHub UI
+  workflow_dispatch:
 
 jobs:
   build-and-push:

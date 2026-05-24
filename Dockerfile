@@ -41,7 +41,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install only runtime dependencies (no compilers, dev libraries, etc.)
 RUN apk add --no-cache \
-    tzdata bash supervisor perl clamav zip unzip \
+    tzdata bash supervisor perl clamav zip unzip coreutils \
     mariadb-connector-c musl-obstack imagemagick poppler-utils \
     tesseract-ocr rsvg-convert xpdf \
     db openssl curl \
@@ -90,8 +90,10 @@ RUN cd /usr/share && \
     chmod +x /usr/share/assp/assp.pl && \
     rm -rf 1.05 1.05.ZIP lib.zip ../ASSP.zip
 
-# Create config directory and symlink
-RUN mkdir -p /etc/assp && ln -sf /etc/assp/assp.cfg /usr/share/assp/assp.cfg
+# Create config directory, logs directory, touch log file and create symlink
+RUN mkdir -p /etc/assp /usr/share/assp/logs && \
+    touch /usr/share/assp/logs/maillog.txt && \
+    ln -sf /etc/assp/assp.cfg /usr/share/assp/assp.cfg
 
 # Change ownership of ASSP directories to the created user
 RUN chown -R assp:assp /usr/share/assp /etc/assp

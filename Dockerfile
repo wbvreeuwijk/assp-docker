@@ -15,7 +15,8 @@ RUN apk add --no-cache --virtual .build-deps \
     perl perl-dev perl-app-cpanminus make automake gcc libc-dev \
     openssl-dev db-dev yaml-dev mariadb-connector-c-dev musl-obstack-dev \
     wget zip unzip perl-net-ssleay perl-crypt-ssleay perl-io-socket-ssl perl-cryptx \
-    imagemagick-dev poppler-dev tesseract-ocr-dev libpng-dev zlib-dev libjpeg-turbo-dev \
+    clamav tesseract-ocr poppler-utils imagemagick \
+    imagemagick-dev poppler-dev tesseract-ocr-dev libpng-dev zlib-dev libjpeg-turbo-dev poppler-utils \
     && cpanm --notest --local-lib /perl-lib \
     CPAN::DistnameInfo Text::Glob Number::Compare Compress::Zlib Convert::TNEF Digest::MD5 Digest::SHA1 Email::MIME::Modifier Email::Send \
     Email::Valid File::ReadBackwards LWP::Simple MIME::Types Mail::SPF Mail::SRS Net::CIDR::Lite Net::DNS Net::IP::Match::Regexp Net::LDAP Net::SMTP \
@@ -43,6 +44,7 @@ RUN apk add --no-cache \
     tzdata bash supervisor perl clamav zip unzip \
     mariadb-connector-c musl-obstack imagemagick poppler-utils \
     tesseract-ocr rsvg-convert xpdf \
+    db openssl curl \
     # Install runtime package-manager equivalents for system perl extensions
     perl-lwp-protocol-https perl-dbd-pg perl-dbd-mysql perl-dbd-sqlite \
     perl-cgi-psgi perl-cgi perl-fcgi perl-term-readkey perl-xml-rss \
@@ -67,27 +69,32 @@ COPY --from=builder /perl-lib /usr/local
 
 # Set environment variables for Perl to see the copied local-lib paths
 ENV PERL5LIB=/usr/local/lib/perl5
+# Create system user and group
+RUN addgroup -S assp && adduser -S -G assp assp
+
 WORKDIR /usr/share/assp
 
 # Get ASSP
-RUN mkdir -p /usr/share/assp && cd /usr/share && \
-    wget https://sourceforge.net/projects/assp/files/latest/download?source=files -O ASSP.zip && \
+RUN cd /usr/share && \
+    wget "https://sourceforge.net/projects/assp/files/latest/download?source=files" -O ASSP.zip && \
     unzip -o ASSP.zip && \
     cd assp && \
-    wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/filecommander/1.05.ZIP && \
+    wget "https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/filecommander/1.05.ZIP" && \
     unzip -o 1.05.ZIP && \
+    mkdir -p /usr/share/assp/images /usr/share/assp/lib && \
     mv 1.05/images/* /usr/share/assp/images && \
     mv 1.05/lib/* /usr/share/assp/lib && \
-    wget https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/lib/lib.zip && \
+    wget "https://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/lib/lib.zip" && \
     unzip -o lib.zip && \
-    wget -O /usr/share/assp/assp.pl https://sourceforge.net/p/assp/svn/HEAD/tree/assp2/trunk/assp.pl?format=raw && \
+    wget -O /usr/share/assp/assp.pl "https://sourceforge.net/p/assp/svn/HEAD/tree/assp2/trunk/assp.pl?format=raw" && \
     chmod +x /usr/share/assp/assp.pl && \
-    rm -f ASSP.zip 1.05.ZIP lib.zip \
-    chown -R assp:assp /usr/share/assp /etc/assp
+    rm -rf 1.05 1.05.ZIP lib.zip ../ASSP.zip
 
-RUN mkdir -p /etc/assp && ln -s /etc/assp/assp.cfg /usr/share/assp/assp.cfg
+# Create config directory and symlink
+RUN mkdir -p /etc/assp && ln -sf /etc/assp/assp.cfg /usr/share/assp/assp.cfg
 
-RUN addgroup -S assp && adduser -S -G assp assp
+# Change ownership of ASSP directories to the created user
+RUN chown -R assp:assp /usr/share/assp /etc/assp
 EXPOSE 55555 225 465 25
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl -f http://localhost:55555/ || exit 1
 

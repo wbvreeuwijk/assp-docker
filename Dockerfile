@@ -108,5 +108,4 @@ VOLUME ["/usr/share/assp/assp.cfg", \
     "/usr/share/assp/notspam", \
     "/usr/share/assp/certs"]
 
-USER assp
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

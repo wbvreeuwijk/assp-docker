@@ -15,6 +15,7 @@ RUN apk add --no-cache --virtual .build-deps \
     perl perl-dev perl-app-cpanminus make automake gcc libc-dev \
     openssl-dev db-dev yaml-dev mariadb-connector-c-dev musl-obstack-dev \
     wget zip unzip perl-net-ssleay perl-crypt-ssleay perl-io-socket-ssl perl-cryptx \
+    imagemagick-dev poppler-dev tesseract-ocr-dev libpng-dev zlib-dev libjpeg-turbo-dev \
     && cpanm --notest --local-lib /perl-lib \
     CPAN::DistnameInfo Text::Glob Number::Compare Compress::Zlib Convert::TNEF Digest::MD5 Digest::SHA1 Email::MIME::Modifier Email::Send \
     Email::Valid File::ReadBackwards LWP::Simple MIME::Types Mail::SPF Mail::SRS Net::CIDR::Lite Net::DNS Net::IP::Match::Regexp Net::LDAP Net::SMTP \

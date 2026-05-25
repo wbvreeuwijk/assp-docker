@@ -34,7 +34,7 @@ The container exposes the standard ASSP networking ports:
 
 To ensure configurations, learning corpora, and SSL certificates persist across container updates, map the following volumes:
 
-* `/usr/share/assp/assp.cfg` – Main configuration file.
+- `/etc/assp` – Configuration folder containing `assp.cfg`.
 - `/usr/share/assp/certs` – SSL certificates for SMTP and HTTPS administrations.
 - `/usr/share/assp/files` – General files database and internal settings.
 - `/usr/share/assp/spam` – Spam corpus for Bayesian learning.
@@ -64,7 +64,7 @@ docker run -d \
   -p 225:225 \
   -p 465:465 \
   -p 55555:55555 \
-  -v /opt/assp/assp.cfg:/usr/share/assp/assp.cfg \
+  -v /opt/assp/config:/etc/assp \
   -v /opt/assp/certs:/usr/share/assp/certs \
   -v /opt/assp/files:/usr/share/assp/files \
   -v /opt/assp/spam:/usr/share/assp/spam \

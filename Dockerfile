@@ -108,24 +108,27 @@ RUN cd /usr/share && \
     chmod +x /usr/share/assp/assp.pl && \
     rm -rf 1.05 1.05.ZIP lib.zip ../ASSP.zip
 
-# Create config directory, logs directory, touch log file and create symlink
+# Create config directory, logs directory, and touch log file
 RUN mkdir -p /etc/assp /usr/share/assp/logs && \
-    touch /usr/share/assp/logs/maillog.txt && \
-    ln -sf /etc/assp/assp.cfg /usr/share/assp/assp.cfg
+    touch /usr/share/assp/logs/maillog.txt
 
 # Change ownership of ASSP directories to the created user
 RUN chown -R assp:assp /usr/share/assp /etc/assp
 EXPOSE 55555 225 465 25
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl -s -o /dev/null -w "%{http_code}" http://localhost:55555/ | grep -qE '^(200|301|302|401)$' || exit 1
 
-# Configure supervisord
+# Copy entrypoint and watcher scripts, and configure supervisord
+COPY entrypoint.sh /entrypoint.sh
+COPY assp-cfg-watcher.sh /usr/local/bin/assp-cfg-watcher.sh
+RUN chmod +x /entrypoint.sh /usr/local/bin/assp-cfg-watcher.sh
+
 COPY supervisord.conf /etc/supervisord.conf
 
-VOLUME ["/usr/share/assp/assp.cfg", \
+VOLUME ["/etc/assp", \
     "/usr/share/assp/errors", \
     "/usr/share/assp/spam", \
     "/usr/share/assp/files", \
     "/usr/share/assp/notspam", \
     "/usr/share/assp/certs"]
 
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+ENTRYPOINT ["/entrypoint.sh"]

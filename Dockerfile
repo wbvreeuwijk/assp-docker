@@ -23,7 +23,7 @@ RUN apk add --no-cache --virtual .build-deps \
     Net::SenderBase Net::Syslog PerlIO::scalar threads threads::shared Thread::Queue Thread::State Tie::DBI Time::HiRes Sys::MemInfo IO::Socket::SSL \
     BerkeleyDB Crypt::CBC Crypt::OpenSSL::AES DBD::CSV DBD::File DBD::LDAP DBD::MariaDB DBIx::AnyDBD YAML \
     File::Find::Rule File::Slurp File::Which https://backpan.perl.org/authors/id/L/LE/LEOCHARRE/LEOCHARRE-Debug-1.03.tar.gz File::chmod Linux::usermod Crypt::RC4 Text::PDF Smart::Comments CAM::PDF PDF::API2 \
-    Convert::Scalar \
+    Convert::Scalar Archive::Extract Archive::Zip Archive::Tar IO::Compress::Gzip IO::Compress::Bzip2 Email::MIME Filesys::Df \
     && cpanm --notest --local-lib /perl-lib \
     File::Scan::ClamAV Mail::DKIM::Verifier Mail::SPF::Query Schedule::Cron \
     https://backpan.perl.org/authors/id/L/LE/LEOCHARRE/LEOCHARRE-CLI-1.19.tar.gz \

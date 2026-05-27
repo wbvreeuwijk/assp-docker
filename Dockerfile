@@ -28,6 +28,7 @@ RUN apk add --no-cache --virtual .build-deps \
     File::Scan::ClamAV Mail::DKIM::Verifier Mail::SPF::Query Schedule::Cron \
     https://backpan.perl.org/authors/id/L/LE/LEOCHARRE/LEOCHARRE-CLI-1.19.tar.gz \
     PDF::Burst PDF::GetImages Image::OCR::Tesseract PDF::OCR PDF::OCR2 \
+    Sys::CpuAffinity Unicode::GCString Lingua::Stem::Snowball Regexp::Optimizer Lingua::Identify \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/*
 
@@ -62,7 +63,8 @@ RUN apk add --no-cache \
     perl-locale-maketext-lexicon perl-locale-maketext-fuzzy perl-regexp-common-net-cidr \
     perl-module-refresh perl-date-manip perl-regexp-ipv6 perl-text-wrapper \
     perl-universal-require perl-role-basic perl-convert-binhex perl-test-sharedfork \
-    perl-test-tcp perl-server-starter perl-starlet
+    perl-test-tcp perl-server-starter perl-starlet \
+    perl-cryptx perl-authen-sasl perl-net-ip
 
 # Copy compiled Perl modules from the builder stage
 COPY --from=builder /perl-lib /usr/local
